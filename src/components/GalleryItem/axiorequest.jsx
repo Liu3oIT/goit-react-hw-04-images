@@ -23,7 +23,7 @@ const GalleryItem = ({ searchQuery }) => {
     if (searchQuery) {
       fetchImages();
     }
-  }, [searchQuery, page]);
+  }, [searchQuery, page, fetchImages]);
   const handleMoreImg = () => {
     setPage(prevState => prevState + 1);
   };
