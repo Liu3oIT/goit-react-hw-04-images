@@ -1,26 +1,21 @@
-import React, { Component } from 'react';
+import React, {useState } from 'react';
 
 import GalleryItem from '../GalleryItem/axiorequest';
 import Form from '../FormForSubmit/form';
 
+const Api = () => {
+  const [searchQuery, setSearchQuery] = useState('');
 
-class Api extends Component {
-  state = {
-    searchQuery: '',
-  };  
-
-  hendleSubmitFrom = searchQuery => {
-    this.setState({
-      searchQuery,
-    });
+  const hendleSubmitFrom = searchQuery => {
+    setSearchQuery(searchQuery);
   };
-  render() {
-    return (
-      <>
-        <Form onSubmit={this.hendleSubmitFrom} />
-        <GalleryItem searchQuery={this.state.searchQuery} />
-      </>
-    );
-  }
-}
+
+  return (
+    <>
+      <Form onSubmit={hendleSubmitFrom} />
+      <GalleryItem searchQuery={searchQuery} />
+    </>
+  );
+};
+
 export default Api;

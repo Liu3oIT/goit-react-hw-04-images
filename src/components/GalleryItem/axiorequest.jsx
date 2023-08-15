@@ -1,57 +1,35 @@
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Audio } from 'react-loader-spinner';
 import { Gallery } from './gallery';
 import { ButtonLoadMore } from 'components/buttonLoadMore/button';
-import css from './Listgallery.module.css'
+import css from './Listgallery.module.css';
 import Modal from '../Modal/modal';
-  import { toast } from 'react-toastify';
-  import 'react-toastify/dist/ReactToastify.css';
-  
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const BASEURL = 'https://pixabay.com/api/';
 const KEY = '37736916-e03abe6b2ffeaa8f87161d473';
-export default class GalleryItem extends Component {
-  state = {
-    articles: [],
-    loading: false,
-    page: 1,
-    totalHits: 0,
-    buttonMore: false,
-    modalOpen: false,
-    modalImageUrl: '',
-  };
+const GalleryItem = ({ searchQuery }) => {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalHits, setTotalHits] = useState(0);
+  const [buttonMore, setButtonMore] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalImageUrl, setModalImageUrl] = useState('');
 
-  componentDidUpdate(prevProps, prevState) {
-    const newRequest = this.props.searchQuery;
-    const prevRequest = prevProps.searchQuery;
-
-    if (prevRequest !== newRequest) {
-      this.setState(
-        {
-          articles: [],
-          page: 1,
-          buttonMore: false,
-        },
-        () => {
-          this.fetchImages();
-        }
-      );
+  useEffect(() => {
+    if (searchQuery) {
+      fetchImages();
     }
-  }
-  handleMoreImg = () => {
-    this.setState(
-      prevState => ({
-        page: prevState.page + 1,
-      }),
-      () => {
-        this.fetchImages();
-      }
-    );
+  }, [searchQuery, page]);
+  const handleMoreImg = () => {
+    setPage(prevState => prevState + 1);
   };
-  fetchImages = async () => {
-    const { searchQuery } = this.props;
-    const { page } = this.state;
-    this.setState({ loading: true });
+
+  const fetchImages = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(BASEURL, {
         params: {
@@ -65,15 +43,13 @@ export default class GalleryItem extends Component {
       });
       const { hits, totalHits } = response.data;
       if (hits.length === 0) {
-        this.setState({
-          articles: [],
-          totalHits: 0,
-          buttonMore: false,
-        });
+        setArticles([]);
+        setTotalHits(0);
+        setButtonMore(false);
 
         toast.error('No images found.', {
           position: 'top-right',
-          autoClose: 3000, 
+          autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -82,78 +58,62 @@ export default class GalleryItem extends Component {
 
         return;
       }
-
-      this.setState(prevState => ({
-        articles: [...prevState.articles, ...response.data.hits],
-        totalHits: totalHits,
-        buttonMore: totalHits > prevState.articles.length + hits.length,
-      }));
-      if(this.state.page === 1)
-       toast.success(`${totalHits} images found.`, {
-         position: 'top-right',
-         autoClose: 3000,
-         hideProgressBar: false,
-         closeOnClick: true,
-         pauseOnHover: true,
-         draggable: true,
-       });
+      setArticles([...articles, ...response.data.hits]);
+      setTotalHits(totalHits);
+      setButtonMore(totalHits > articles.length + hits.length);
+      if (page === 1)
+        toast.success(`${totalHits} images found.`, {
+          position: 'top-right',
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
     } catch (error) {
       console.log('Error', error);
     } finally {
-      this.setState({ loading: false });
+      setLoading(false);
     }
   };
-  openModal = imageUrl => {
-    this.setState({
-      modalOpen: true,
-      modalImageUrl: imageUrl,
-    });
+  const openModal = imageUrl => {
+    setModalOpen(true);
+    setModalImageUrl(imageUrl);
   };
 
-  closeModal = () => {
-    this.setState({
-      modalOpen: false,
-      modalImageUrl: '',
-    });
+  const closeModal = () => {
+    setModalOpen(false);
+    setModalImageUrl('');
   };
 
-  render() {
-    const {
-      articles,
-      loading,
-      buttonMore,
-      totalHits,
-      modalOpen,
-      modalImageUrl,
-    } = this.state;
-
-    return (
-      <>
-        <Gallery articles={articles} openModal={this.openModal} />
-        {loading && (
-          <div className={css.loader}>
-            <Audio
-              height="80"
-              width="80"
-              radius="9"
-              color="green"
-              ariaLabel="three-dots-loading"
-              wrapperStyle={{}}
-              wrapperClass={''}
-            />
-          </div>
-        )}
-        {modalOpen && ( 
-          <Modal
-            isOpen={modalOpen}
-            imageUrl={modalImageUrl}
-            onClose={this.closeModal}
+  return (
+    <>
+      <Gallery articles={articles} openModal={openModal} />
+      {loading && (
+        <div className={css.loader}>
+          <Audio
+            height="80"
+            width="80"
+            radius="9"
+            color="green"
+            ariaLabel="three-dots-loading"
+            wrapperStyle={{}}
+            wrapperClass={''}
           />
-        )}
-        {buttonMore && articles.length < totalHits ? (
-          <ButtonLoadMore handleMoreImg={this.handleMoreImg} />
-        ) : null}
-      </>
-    );
-  }
-}
+        </div>
+      )}
+      {modalOpen && (
+        <Modal
+          isOpen={modalOpen}
+          imageUrl={modalImageUrl}
+          onClose={closeModal}
+        />
+      )}
+      {buttonMore && articles.length < totalHits ? (
+        <ButtonLoadMore handleMoreImg={handleMoreImg} />
+      ) : null}
+    </>
+  );
+};
+export default GalleryItem;
+
