@@ -6,13 +6,9 @@ import Form from '../FormForSubmit/form';
 const Api = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const hendleSubmitFrom = searchQuery => {
-    setSearchQuery(searchQuery);
-  };
-
   return (
     <>
-      <Form onSubmit={hendleSubmitFrom} />
+      <Form onSubmit={setSearchQuery} />
       <GalleryItem searchQuery={searchQuery} />
     </>
   );

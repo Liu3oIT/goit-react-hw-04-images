@@ -12,6 +12,7 @@ const BASEURL = 'https://pixabay.com/api/';
 const KEY = '37736916-e03abe6b2ffeaa8f87161d473';
 const GalleryItem = ({ searchQuery }) => {
   const [articles, setArticles] = useState([]);
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalHits, setTotalHits] = useState(0);
@@ -20,18 +21,27 @@ const GalleryItem = ({ searchQuery }) => {
   const [modalImageUrl, setModalImageUrl] = useState('');
 
   useEffect(() => {
-    if (searchQuery) {
-      fetchImages();
+    if (!searchQuery) {
+      return;
     }
-  }, [searchQuery, page, fetchImages]);
+
+    if (search !== searchQuery) {
+      setArticles([]);
+      setPage(1);
+    }
+
+    fetchImages();
+  }, [searchQuery, page]);
   const handleMoreImg = () => {
     setPage(prevState => prevState + 1);
   };
 
   const fetchImages = async () => {
     setLoading(true);
+
     try {
       const response = await axios.get(BASEURL, {
+      
         params: {
           q: searchQuery,
           key: KEY,
@@ -116,4 +126,3 @@ const GalleryItem = ({ searchQuery }) => {
   );
 };
 export default GalleryItem;
-

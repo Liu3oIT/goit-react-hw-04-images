@@ -25,9 +25,6 @@ const Form = ({ onSubmit }) => {
     }
     onSubmit(searchQuery);
 
-    reset();
-  };
-  const reset = () => {
     setSearchQuery('');
   };
 
