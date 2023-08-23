@@ -28,64 +28,68 @@ const GalleryItem = ({ searchQuery }) => {
     if (search !== searchQuery) {
       setArticles([]);
       setPage(1);
+      setSearch(searchQuery);
+    }
+
+    async function fetchImages() {
+      setLoading(true);
+     setSearch(searchQuery);
+    
+      try {
+        const response = await axios.get(BASEURL, {
+          params: {
+            q: searchQuery,
+            key: KEY,
+            page: page,
+            image_type: 'photo',
+            orientation: 'horizontal',
+            per_page: 12,
+          },
+        });
+        const { hits, totalHits } = response.data;
+        if (hits.length === 0) {
+          setArticles([]);
+          setTotalHits(0);
+          setButtonMore(false);
+
+          toast.error('No images found.', {
+            position: 'top-right',
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+
+          return;
+        }
+        setArticles(prevArticles => [...prevArticles, ...hits]);
+        setTotalHits(totalHits);
+        setButtonMore(totalHits > articles.length + hits.length);
+        if (page === 1) {
+          toast.success(`${totalHits} images found.`, {
+            position: 'top-right',
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        }
+      } catch (error) {
+        console.log('Error', error);
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchImages();
   }, [searchQuery, page]);
+
   const handleMoreImg = () => {
     setPage(prevState => prevState + 1);
   };
 
-  const fetchImages = async () => {
-    setLoading(true);
-
-    try {
-      const response = await axios.get(BASEURL, {
-      
-        params: {
-          q: searchQuery,
-          key: KEY,
-          page: page,
-          image_type: 'photo',
-          orientation: 'horizontal',
-          per_page: 12,
-        },
-      });
-      const { hits, totalHits } = response.data;
-      if (hits.length === 0) {
-        setArticles([]);
-        setTotalHits(0);
-        setButtonMore(false);
-
-        toast.error('No images found.', {
-          position: 'top-right',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
-
-        return;
-      }
-      setArticles([...articles, ...response.data.hits]);
-      setTotalHits(totalHits);
-      setButtonMore(totalHits > articles.length + hits.length);
-      if (page === 1)
-        toast.success(`${totalHits} images found.`, {
-          position: 'top-right',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
-    } catch (error) {
-      console.log('Error', error);
-    } finally {
-      setLoading(false);
-    }
-  };
   const openModal = imageUrl => {
     setModalOpen(true);
     setModalImageUrl(imageUrl);
