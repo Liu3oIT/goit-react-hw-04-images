@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Audio } from 'react-loader-spinner';
 import { Gallery } from './gallery';
@@ -10,37 +10,21 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const BASEURL = 'https://pixabay.com/api/';
 const KEY = '37736916-e03abe6b2ffeaa8f87161d473';
-const GalleryItem = ({ searchQuery }) => {
-  const [articles, setArticles] = useState([]);
-  const [search, setSearch] = useState(searchQuery);
+
+const GalleryItem = ({ searchQuery, articles, setArticles, setPage, page }) => {
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
   const [totalHits, setTotalHits] = useState(0);
-  const [buttonMore, setButtonMore] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState('');
-
-
-
-  const searchq = useMemo(() => {
-    setSearch(searchQuery);
-     if (search !== searchQuery) {
-       setArticles([]);
-       setPage(1);
-     }
-  }, [searchQuery]);
+  const [buttonMore, setButtonMore] = useState(false);
   useEffect(() => {
-      
     if (!searchQuery) {
       return;
     }
 
-    
-
     async function fetchImages() {
       setLoading(true);
-     setSearch(searchQuery);
-    
+
       try {
         const response = await axios.get(BASEURL, {
           params: {
@@ -57,7 +41,6 @@ const GalleryItem = ({ searchQuery }) => {
           setArticles([]);
           setTotalHits(0);
           setButtonMore(false);
-
           toast.error('No images found.', {
             position: 'top-right',
             autoClose: 3000,
@@ -71,7 +54,7 @@ const GalleryItem = ({ searchQuery }) => {
         }
         setArticles(prevArticles => [...prevArticles, ...hits]);
         setTotalHits(totalHits);
-        setButtonMore(totalHits > articles.length + hits.length);
+        setButtonMore(true);
         if (page === 1) {
           toast.success(`${totalHits} images found.`, {
             position: 'top-right',
@@ -90,7 +73,7 @@ const GalleryItem = ({ searchQuery }) => {
     }
 
     fetchImages();
-  }, [searchQuery, page]);
+  }, [searchQuery, setArticles, page]);
 
   const handleMoreImg = () => {
     setPage(prevState => prevState + 1);
@@ -135,4 +118,5 @@ const GalleryItem = ({ searchQuery }) => {
     </>
   );
 };
+
 export default GalleryItem;
