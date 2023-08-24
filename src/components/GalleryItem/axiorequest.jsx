@@ -52,9 +52,11 @@ const GalleryItem = ({ searchQuery, articles, setArticles, setPage, page }) => {
 
           return;
         }
+
         setArticles(prevArticles => [...prevArticles, ...hits]);
         setTotalHits(totalHits);
         setButtonMore(true);
+
         if (page === 1) {
           toast.success(`${totalHits} images found.`, {
             position: 'top-right',
